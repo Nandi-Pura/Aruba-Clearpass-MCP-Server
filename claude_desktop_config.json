@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "clearpass": {
+      "command": "python",
+      "args": ["/absolute/path/to/clearpass-mcp/server.py"],
+      "env": {
+        "CLEARPASS_HOST": "https://clearpass.yourdomain.com",
+        "CLEARPASS_CLIENT_ID": "your_client_id",
+        "CLEARPASS_CLIENT_SECRET": "your_client_secret",
+        "CLEARPASS_VERIFY_SSL": "true"
+      }
+    }
+  }
+}
