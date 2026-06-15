@@ -63,10 +63,7 @@ Developer Hub Code Exchange.
 - `CONTRIBUTING.md` — setup, testing, linting, project layout, tool-addition guide, PR process
 - `SECURITY.md` — responsible-disclosure contact process
 - `CHANGELOG.md` (this file)
-- `examples/check_connection.py` — standalone `ClearPassClient` usage
-- `examples/investigate_device.md` — natural-language investigation workflow
-- `examples/onboard_guest.md` — guest provisioning workflow
-- `examples/quarantine_endpoint.md` — endpoint quarantine workflow
+- Guided workflow examples are provided as built-in MCP Prompts (see `server.py`)
 
 **Distribution**
 - `Dockerfile` — multi-stage Python build for SSE transport
