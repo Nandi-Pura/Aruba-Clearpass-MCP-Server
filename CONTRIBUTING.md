@@ -1,140 +1,58 @@
-# Contributing to Aruba ClearPass MCP Server
+# Contributing to Aruba-Clearpass-MCP-Server
 
-Thank you for considering a contribution! This document covers how to set up the development
-environment, run the test suite, and submit a pull request.
+Welcome, and thank you for considering contributing to the Aruba-Clearpass-MCP-Server! This project integrates HPE Aruba ClearPass (CPPM) with the Model Context Protocol (MCP). We welcome contributions, especially those that add coverage for new ClearPass API endpoints.
 
-## Code of Conduct
+## Local Development Environment
 
-Please be respectful and constructive. This is a community project and everyone is welcome.
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Nandi-Pura/Aruba-Clearpass-MCP-Server.git
+   cd Aruba-Clearpass-MCP-Server
+   ```
 
----
+2. **Create a virtual environment:**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
+   ```
 
-## Development Setup
+3. **Install dependencies:**
+   ```bash
+   pip install -e ".[dev]"
+   ```
 
-### Prerequisites
+## Running the Server Locally
 
-- Python 3.10 or higher
-- `git`
-- A ClearPass Policy Manager instance for integration testing (optional — unit tests run fully offline)
-
-### 1. Fork and clone
-
+After setting up your `.env` file with your ClearPass credentials:
 ```bash
-git clone https://github.com/Nandi-Pura/Aruba-Clearpass-MCP-Server.git
-cd Aruba-Clearpass-MCP-Server
+# Validate your configuration
+clearpass-mcp --check
+
+# Run the MCP server using stdio (default)
+clearpass-mcp
+
+# Run the MCP server using SSE transport
+clearpass-mcp --transport sse --port 8000
 ```
 
-### 2. Create a virtual environment
+## Submitting Issues
 
-```bash
-python -m venv .venv
-# Windows
-.venv\Scripts\activate
-# macOS / Linux
-source .venv/bin/activate
-```
+If you encounter an issue or have a feature request, please open a GitHub Issue:
+- **Bug Reports:** Include steps to reproduce, expected behavior, actual behavior, and relevant logs (with secrets redacted).
+- **Feature Requests:** Describe the use case and how the new feature or endpoint coverage would be helpful.
 
-### 3. Install in editable mode with dev dependencies
+## Pull Requests
 
-```bash
-pip install -e ".[dev]"
-```
+1. Fork the repository and create a new branch from `main`.
+2. **Branch Naming:** Use conventional prefixes for your branch name:
+   - `feat/` for new features (e.g., `feat/new-api-endpoint`)
+   - `fix/` for bug fixes (e.g., `fix/token-refresh`)
+   - `docs/` for documentation updates (e.g., `docs/update-readme`)
+3. Ensure your code passes all linting and type checks (`ruff check .` and `mypy src`).
+4. Submit your Pull Request and provide a clear description of the changes.
 
-### 4. (Optional) Configure a real ClearPass instance
+## Code Style
 
-```bash
-cp .env.example .env
-# Edit .env with your ClearPass credentials
-clearpass-mcp --check   # validates config + tests OAuth2
-```
-
----
-
-## Running Tests
-
-All tests run fully offline using `respx` to mock the ClearPass API.
-
-```bash
-pytest                      # run all tests
-pytest -v                   # verbose output
-pytest tests/test_client.py # single file
-```
-
-### Test coverage
-
-```bash
-pip install pytest-cov
-pytest --cov=clearpass_mcp --cov-report=term-missing
-```
-
----
-
-## Linting and Type Checking
-
-```bash
-ruff check .            # linter (PEP 8, imports, style)
-ruff check . --fix      # auto-fix where possible
-mypy src                # static type checking
-```
-
-The CI pipeline runs all three checks on every push and pull request.
-
----
-
-## Project Layout
-
-```
-src/clearpass_mcp/
-├── __init__.py         # version / metadata
-├── __main__.py         # CLI entry point
-├── config.py           # pydantic-settings configuration
-├── client.py           # ClearPassClient (httpx pool, OAuth2, retry, paginate)
-├── catalog.py          # static API endpoint catalog
-├── audit.py            # structured JSON audit logger
-├── server.py           # FastMCP wiring: resources, prompts, tool registration
-└── tools/
-    ├── generic.py      # clearpass_get/post/patch/put/delete/list_apis
-    ├── endpoints.py    # find_endpoint_by_mac, get_endpoint_insight
-    ├── sessions.py     # list_active_sessions, disconnect_session, bulk_coa
-    ├── guests.py       # create_guest_account
-    └── admin.py        # get_server_health, search_audit_records
-```
-
----
-
-## Adding a New Tool
-
-1. Create or find the appropriate module in `src/clearpass_mcp/tools/`.
-2. Add your tool function inside the `register(mcp, settings)` function using `@mcp.tool()`.
-3. Add type hints and a docstring including:
-   - What the tool does
-   - Each parameter's purpose and example values
-   - At least 2–3 example natural-language prompts a user might say
-4. Add tests in `tests/test_curated_tools.py` (or a new test file).
-5. Update the **Tool Reference** table in `README.md`.
-6. Add an entry to `CHANGELOG.md` under `[Unreleased]`.
-
----
-
-## Pull Request Process
-
-1. Create a feature branch: `git checkout -b feat/my-new-tool`
-2. Make your changes, ensuring:
-   - `ruff check .` passes
-   - `mypy src` passes
-   - `pytest` passes
-   - Docstrings and type hints are complete
-3. Update `CHANGELOG.md` under `[Unreleased]`.
-4. Open a PR against `main`. Describe what the change does and why.
-
----
-
-## Reporting Bugs
-
-Open a GitHub issue with:
-- Python version and OS
-- Steps to reproduce
-- Expected vs. actual behaviour
-- Relevant log output (redact any secrets!)
-
-For security-sensitive issues, see [SECURITY.md](SECURITY.md) instead.
+- **PEP8:** Follow standard Python PEP8 conventions. We use `ruff` to enforce this.
+- **Type Hints:** All functions and methods must include explicit Python type hints.
+- **Docstrings:** Use Google-style docstrings for all modules, classes, and functions to ensure clear documentation.
