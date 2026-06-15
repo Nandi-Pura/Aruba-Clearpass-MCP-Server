@@ -1,20 +1,14 @@
-"""
-server.py — FastMCP server wiring for the ClearPass MCP Server.
+"""FastMCP server wiring for the ClearPass MCP Server.
 
-Responsibilities
-----------------
-1. Create the :class:`~mcp.server.fastmcp.FastMCP` application instance.
-2. Manage the lifecycle of the shared :class:`~clearpass_mcp.client.ClearPassClient`
-   and :class:`~clearpass_mcp.audit.AuditLogger` via an ``asynccontextmanager`` lifespan.
-3. Register MCP **resources** (the API catalog) and **prompts** (guided workflows).
-4. Register all tool modules from ``clearpass_mcp.tools``.
+This module initializes the FastMCP application, manages the lifecycle of the
+shared ClearPassClient and AuditLogger, and registers all MCP resources,
+prompts, and tools.
 
-Transports
-----------
-- **stdio** (default): compatible with Claude Desktop, Claude Code, and any
-  MCP-conformant client.
-- **SSE**: selectable via ``--transport sse --port <port>`` for remote /
-  multi-user deployments.
+Transports:
+    stdio: Default transport compatible with Claude Desktop, Claude Code,
+        and any MCP-conformant client.
+    sse: Selectable via `--transport sse --port <port>` for remote or
+        multi-user deployments.
 """
 from __future__ import annotations
 
@@ -42,20 +36,22 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def _lifespan(server: FastMCP) -> AsyncGenerator[None, None]:  # noqa: ARG001
-    """
-    FastMCP lifespan context manager.
+    """FastMCP lifespan context manager.
 
-    On startup:
-    - Loads and validates :class:`~clearpass_mcp.config.Settings`.
-    - Creates the shared :class:`~clearpass_mcp.client.ClearPassClient`.
-    - Creates the :class:`~clearpass_mcp.audit.AuditLogger`.
-    - Configures the Python logging level.
+    Handles startup and shutdown events for the MCP server, including
+    configuration loading, client initialization, and resource cleanup.
 
-    On shutdown:
-    - Closes the HTTP client (drains connection pool).
-    - Closes the audit log file handle.
+    Args:
+        server (FastMCP): The FastMCP server instance.
+
+    Yields:
+        None
     """
-    settings = Settings()
+    try:
+        settings = Settings()
+    except Exception as exc:
+        logger.error(f"Failed to load configuration: {exc}")
+        raise
 
     # Configure logging
     logging.basicConfig(
@@ -70,20 +66,28 @@ async def _lifespan(server: FastMCP) -> AsyncGenerator[None, None]:  # noqa: ARG
         settings.CLEARPASS_READ_ONLY,
     )
 
-    client = ClearPassClient(settings)
-    audit = AuditLogger(settings.CLEARPASS_AUDIT_LOG_PATH)
+    try:
+        client = ClearPassClient(settings)
+        audit = AuditLogger(settings.CLEARPASS_AUDIT_LOG_PATH)
 
-    set_client(client)
-    set_audit_logger(audit)
+        set_client(client)
+        set_audit_logger(audit)
+    except Exception as exc:
+        logger.error(f"Failed to initialize client or audit logger: {exc}")
+        raise
 
     try:
         yield
     finally:
         logger.info("Shutting down ClearPass MCP Server.")
-        await client.close()
-        audit.close()
-        set_client(None)
-        set_audit_logger(None)
+        try:
+            await client.close()
+            audit.close()
+        except Exception as exc:
+            logger.error(f"Error during shutdown: {exc}")
+        finally:
+            set_client(None)
+            set_audit_logger(None)
 
 
 # ---------------------------------------------------------------------------
@@ -112,13 +116,15 @@ mcp = FastMCP(
 
 @mcp.resource("clearpass://api-catalog")
 def api_catalog() -> str:
-    """
-    The complete ClearPass REST API endpoint catalog, grouped by category.
+    """The complete ClearPass REST API endpoint catalog, grouped by category.
 
     Load this resource to understand what endpoints are available before
-    constructing tool calls.  The catalog covers all major CPPM v1 REST API
+    constructing tool calls. The catalog covers all major CPPM v1 REST API
     categories: Identities, Policy Elements, Session Control, Onboard/CA,
     OnGuard, Guests, System & Logs, and more.
+
+    Returns:
+        str: JSON-formatted string containing the API catalog.
     """
     return json.dumps(CLEARPASS_APIS, indent=2, ensure_ascii=False)
 
@@ -130,11 +136,16 @@ def api_catalog() -> str:
 
 @mcp.prompt()
 def investigate_device_by_mac(mac_address: str) -> list[dict[str, Any]]:
-    """
-    Guided workflow: investigate a device by its MAC address.
+    """Guided workflow: investigate a device by its MAC address.
 
     Combines endpoint lookup, session status, and Insight data into a
     comprehensive device investigation.
+
+    Args:
+        mac_address (str): The MAC address of the device to investigate.
+
+    Returns:
+        list[dict[str, Any]]: A list containing the prompt messages for the AI client.
     """
     return [
         {
@@ -158,10 +169,17 @@ def onboard_guest_account(
     contact_email: str,
     valid_hours: int = 8,
 ) -> list[dict[str, Any]]:
-    """
-    Guided workflow: onboard a new temporary guest account.
+    """Guided workflow: onboard a new temporary guest account.
 
     Walks through role selection, account creation, and receipt delivery.
+
+    Args:
+        visitor_name (str): Name of the visitor.
+        contact_email (str): Email address of the visitor.
+        valid_hours (int, optional): Number of hours the account is valid. Defaults to 8.
+
+    Returns:
+        list[dict[str, Any]]: A list containing the prompt messages for the AI client.
     """
     return [
         {
@@ -182,10 +200,15 @@ def onboard_guest_account(
 
 @mcp.prompt()
 def quarantine_endpoint(mac_address: str) -> list[dict[str, Any]]:
-    """
-    Guided workflow: quarantine / disconnect a suspicious endpoint.
+    """Guided workflow: quarantine or disconnect a suspicious endpoint.
 
     Investigates the device, then offers a targeted disconnect or CoA.
+
+    Args:
+        mac_address (str): The MAC address of the endpoint to quarantine.
+
+    Returns:
+        list[dict[str, Any]]: A list containing the prompt messages for the AI client.
     """
     return [
         {
@@ -206,10 +229,12 @@ def quarantine_endpoint(mac_address: str) -> list[dict[str, Any]]:
 
 @mcp.prompt()
 def daily_cluster_health_check() -> list[dict[str, Any]]:
-    """
-    Guided workflow: run a daily ClearPass cluster health check.
+    """Guided workflow: run a daily ClearPass cluster health check.
 
     Aggregates server health, license usage, and recent error events.
+
+    Returns:
+        list[dict[str, Any]]: A list containing the prompt messages for the AI client.
     """
     return [
         {
@@ -234,22 +259,30 @@ def daily_cluster_health_check() -> list[dict[str, Any]]:
 
 
 class _LazySettings:
-    """
-    Proxy that reads settings from the live ClearPassClient singleton at call time.
+    """Proxy that reads settings from the live ClearPassClient singleton at call time.
 
-    This avoids calling ``Settings()`` at module import time (which would fail if
-    environment variables are not yet set) while still passing a ``settings``-like
-    object to tool ``register()`` functions so they can enforce guards such as
-    ``CLEARPASS_READ_ONLY`` on every invocation.
+    This avoids calling `Settings()` at module import time (which would fail if
+    environment variables are not yet set) while still passing a `settings`-like
+    object to tool `register()` functions so they can enforce guards such as
+    `CLEARPASS_READ_ONLY` on every invocation.
     """
 
     @property
     def CLEARPASS_READ_ONLY(self) -> bool:  # noqa: N802
+        """Check if the server is in read-only mode.
+
+        Returns:
+            bool: True if read-only mode is enabled, False otherwise.
+        """
         try:
             from clearpass_mcp.client import get_client
             return get_client()._settings.CLEARPASS_READ_ONLY
-        except RuntimeError:
+        except RuntimeError as e:
+            logger.error(f"Error accessing settings: {e}. Defaulting to allow writes.")
             return False  # default: allow writes until client is initialised
+        except Exception as e:
+            logger.error(f"Unexpected error accessing settings: {e}. Defaulting to allow writes.")
+            return False
 
 
 def _register_tools() -> None:
