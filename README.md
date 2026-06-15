@@ -104,6 +104,41 @@ Exit codes: `0` = success, `1` = config error, `2` = OAuth2 error.
 
 ## Client Integration
 
+### Cursor IDE
+
+1. Open **Cursor Settings** > **Features** > **MCP**.
+2. Click **+ Add New MCP Server**.
+3. Configure as follows:
+   - **Type:** `command`
+   - **Name:** `ClearPass`
+   - **Command:** `clearpass-mcp`
+4. Click **Save**.
+*(Note: Ensure your Cursor instance has access to the required `CLEARPASS_*` environment variables, or use a `.env` file in your workspace).*
+
+### VS Code (Cline / Roo Code)
+
+Access your MCP settings file via the extension's panel or Command Palette, and add:
+
+```json
+{
+  "mcpServers": {
+    "clearpass": {
+      "command": "clearpass-mcp",
+      "env": {
+        "CLEARPASS_HOST": "https://clearpass.yourdomain.com",
+        "CLEARPASS_CLIENT_ID": "your_client_id",
+        "CLEARPASS_CLIENT_SECRET": "your_client_secret",
+        "CLEARPASS_VERIFY_SSL": "true"
+      }
+    }
+  }
+}
+```
+
+### Windsurf IDE
+
+Add the same JSON configuration block from above to your `~/.codeium/windsurf/mcp_config.json` file and restart Windsurf.
+
 ### Claude Desktop
 
 Add to `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or
