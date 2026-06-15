@@ -121,11 +121,15 @@ def main() -> None:
     from clearpass_mcp.server import mcp
 
     if args.transport == "sse":
+        # FastMCP.run() only accepts `transport` and `mount_path`.
+        # Host and port must be set on the settings object before calling run().
+        mcp.settings.host = args.host
+        mcp.settings.port = args.port
         print(
             f"Starting ClearPass MCP Server (SSE) on http://{args.host}:{args.port}",
             file=sys.stderr,
         )
-        mcp.run(transport="sse", host=args.host, port=args.port)  # type: ignore[call-arg]
+        mcp.run(transport="sse")
     else:
         mcp.run(transport="stdio")
 

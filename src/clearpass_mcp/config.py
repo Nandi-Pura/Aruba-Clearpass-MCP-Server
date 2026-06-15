@@ -25,7 +25,7 @@ CLEARPASS_LOG_LEVEL
     Default: ``INFO``.
 CLEARPASS_AUDIT_LOG_PATH
     Absolute path for the structured JSON audit log file.
-    When unset, audit events are written to stdout only.
+    When unset, audit events are written to stderr only.
 CLEARPASS_MAX_PAGES
     Maximum pages to follow when paginating list responses.
     Default: ``20``.
@@ -83,7 +83,8 @@ class Settings(BaseSettings):
         level = v.upper()
         if level not in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:
             raise ValueError(
-                f"CLEARPASS_LOG_LEVEL must be one of DEBUG, INFO, WARNING, ERROR, CRITICAL — got '{v}'"
+                "CLEARPASS_LOG_LEVEL must be one of "
+                f"DEBUG, INFO, WARNING, ERROR, CRITICAL — got '{v}'"
             )
         return level
 

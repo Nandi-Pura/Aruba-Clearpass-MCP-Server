@@ -1,9 +1,8 @@
 {
   "mcpServers": {
     "clearpass": {
-      "_comment_primary": "Primary: install via uv and run without cloning",
-      "command": "uvx",
-      "args": ["clearpass-mcp"],
+      "_comment": "Primary: run from source — requires 'pip install -e .' to have been run first",
+      "command": "clearpass-mcp",
       "env": {
         "CLEARPASS_HOST": "https://clearpass.yourdomain.com",
         "CLEARPASS_CLIENT_ID": "your_client_id",
@@ -14,7 +13,7 @@
       }
     },
     "clearpass-dev": {
-      "_comment_dev": "Development: run from source (pip install -e . first)",
+      "_comment": "Alternative: reference Python module directly (no PATH requirement)",
       "command": "python",
       "args": ["-m", "clearpass_mcp"],
       "env": {

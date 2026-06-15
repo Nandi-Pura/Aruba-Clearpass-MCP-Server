@@ -13,7 +13,10 @@ Every POST/PATCH/PUT/DELETE operation emits a JSON line containing:
 - ``status_code``— HTTP status code (or ``null`` for dry-run / connection errors)
 
 Output goes to:
-1. ``stdout`` always (so MCP clients with stdio transport see audit lines in the log stream)
+1. ``stderr`` always — **stdout must remain clean** for the MCP stdio transport, which
+   uses stdout exclusively for JSON-RPC framing.  Writing non-JSON audit lines to stdout
+   would corrupt the protocol stream and break all MCP clients.  Do *not* change this to
+   stdout.
 2. A file at ``CLEARPASS_AUDIT_LOG_PATH`` (if configured).
 """
 from __future__ import annotations

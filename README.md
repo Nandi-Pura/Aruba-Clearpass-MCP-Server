@@ -46,14 +46,7 @@ graph LR
 
 ## Quick Start
 
-### Install with `uv` (recommended)
-
-```bash
-# Run directly without cloning (requires Python 3.10+)
-uvx clearpass-mcp --check
-```
-
-### Install from source
+### Install from source (recommended)
 
 ```bash
 git clone https://github.com/Nandi-Pura/Aruba-Clearpass-MCP-Server.git
@@ -61,6 +54,16 @@ cd Aruba-Clearpass-MCP-Server
 pip install -e .
 clearpass-mcp --help
 ```
+
+### Run without cloning (via `uvx`)
+
+```bash
+# Requires Python 3.10+ and uv installed
+uvx --from git+https://github.com/Nandi-Pura/Aruba-Clearpass-MCP-Server clearpass-mcp --check
+```
+
+> **Note:** `uvx clearpass-mcp` (without `--from git+...`) will be available once this package
+> is published to PyPI. Until then, use the `git+https` form above or install from source.
 
 ### Configuration
 
@@ -104,14 +107,15 @@ Exit codes: `0` = success, `1` = config error, `2` = OAuth2 error.
 ### Claude Desktop
 
 Add to `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or
-`~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
+`~/Library/Application Support/Claude/claude_desktop_config.json` (macOS).
+
+**From source** (`pip install -e .` must have been run first — this puts `clearpass-mcp` on PATH inside the venv):
 
 ```json
 {
   "mcpServers": {
     "clearpass": {
-      "command": "uvx",
-      "args": ["clearpass-mcp"],
+      "command": "clearpass-mcp",
       "env": {
         "CLEARPASS_HOST": "https://clearpass.yourdomain.com",
         "CLEARPASS_CLIENT_ID": "your_client_id",
@@ -123,7 +127,7 @@ Add to `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or
 }
 ```
 
-**From source (development):**
+**Alternatively, reference the Python module directly** (no PATH requirement):
 
 ```json
 {

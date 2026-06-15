@@ -142,7 +142,8 @@ def investigate_device_by_mac(mac_address: str) -> list[dict[str, Any]]:
             "content": (
                 f"Please investigate the device with MAC address {mac_address} in ClearPass.\n\n"
                 "1. Use find_endpoint_by_mac to get its registration status and attributes.\n"
-                "2. Use list_active_sessions with a MAC filter to check if it has an active session.\n"
+                "2. Use list_active_sessions with a MAC filter "
+                "to check if it has an active session.\n"
                 "3. Use get_endpoint_insight to retrieve historical Insight data.\n"
                 "4. Summarise the findings: Is the device known? Is it currently connected? "
                 "What role/VLAN is it on? Any anomalies?"
@@ -190,7 +191,8 @@ def quarantine_endpoint(mac_address: str) -> list[dict[str, Any]]:
         {
             "role": "user",
             "content": (
-                f"I need to quarantine the potentially suspicious device with MAC {mac_address}.\n\n"
+                f"I need to quarantine the potentially suspicious "
+                f"device with MAC {mac_address}.\n\n"
                 "1. Use find_endpoint_by_mac to confirm the device is known.\n"
                 "2. Use list_active_sessions with a MAC filter to find its session ID.\n"
                 "3. If a session is found, use disconnect_session with dry_run=True first.\n"
@@ -216,8 +218,10 @@ def daily_cluster_health_check() -> list[dict[str, Any]]:
                 "Please run a daily health check on the ClearPass cluster.\n\n"
                 "1. Use get_server_health to get versions, cluster node status, and FIPS mode.\n"
                 "2. Use clearpass_get on /application-license/summary for license consumption.\n"
-                "3. Use search_audit_records for the past 24 hours to highlight any admin changes.\n"
-                "4. Use clearpass_get on /system-event to check for recent system warnings or errors.\n"
+                "3. Use search_audit_records for the past 24 hours "
+                "to highlight any admin changes.\n"
+                "4. Use clearpass_get on /system-event to check "
+                "for recent system warnings or errors.\n"
                 "5. Provide a concise health summary with any items requiring attention."
             ),
         }

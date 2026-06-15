@@ -246,7 +246,9 @@ class ClearPassClient:
 
         # 401 — refresh token once and retry the same request
         if resp.status_code == 401:
-            logger.warning("401 Unauthorized on %s %s — refreshing token and retrying.", method, path)
+            logger.warning(
+                "401 Unauthorized on %s %s — refreshing token and retrying.", method, path
+            )
             self._invalidate_token()
             token = await self.get_token()
             headers["Authorization"] = f"Bearer {token}"
