@@ -1,13 +1,29 @@
 {
   "mcpServers": {
     "clearpass": {
-      "command": "python",
-      "args": ["/absolute/path/to/clearpass-mcp/server.py"],
+      "_comment_primary": "Primary: install via uv and run without cloning",
+      "command": "uvx",
+      "args": ["clearpass-mcp"],
       "env": {
         "CLEARPASS_HOST": "https://clearpass.yourdomain.com",
         "CLEARPASS_CLIENT_ID": "your_client_id",
         "CLEARPASS_CLIENT_SECRET": "your_client_secret",
-        "CLEARPASS_VERIFY_SSL": "true"
+        "CLEARPASS_VERIFY_SSL": "true",
+        "CLEARPASS_READ_ONLY": "false",
+        "CLEARPASS_LOG_LEVEL": "INFO"
+      }
+    },
+    "clearpass-dev": {
+      "_comment_dev": "Development: run from source (pip install -e . first)",
+      "command": "python",
+      "args": ["-m", "clearpass_mcp"],
+      "env": {
+        "CLEARPASS_HOST": "https://clearpass.yourdomain.com",
+        "CLEARPASS_CLIENT_ID": "your_client_id",
+        "CLEARPASS_CLIENT_SECRET": "your_client_secret",
+        "CLEARPASS_VERIFY_SSL": "true",
+        "CLEARPASS_READ_ONLY": "false",
+        "CLEARPASS_LOG_LEVEL": "DEBUG"
       }
     }
   }
